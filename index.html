@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!-- Content Security Policy: restrict scripts/styles to self and inline nonces (best effort for static site) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src data:; font-src 'self' data:; connect-src 'none';">
+  <title>CYBER SUITE | Multi-Tool Security Toolkit</title>
+  <style>
+    /* ============================
+       GLOBAL RESET & FONTS
+    ============================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 20% 30%, #0a0f1a, #03060c);
+      min-height: 100vh;
+      padding: 1.5rem;
+      position: relative;
+      color: #e0f2fe;
+    }
+
+    /* Animated background particles via canvas (JS injected) */
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Glassmorphism card style */
+    .glass-card {
+      background: rgba(12, 20, 30, 0.65);
+      backdrop-filter: blur(12px);
+      border-radius: 2rem;
+      border: 1px solid rgba(0, 255, 255, 0.2);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    /* Typography */
+    h1 {
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      background: linear-gradient(135deg, #0ff, #a0f, #4c9aff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 8px rgba(0,255,255,0.4);
+      letter-spacing: 1px;
+    }
+
+    /* Neon button glow */
+    .neon-btn {
+      background: rgba(0, 20, 40, 0.8);
+      border: 1px solid #0ff;
+      color: #0ff;
+      padding: 0.6rem 1.2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+      backdrop-filter: blur(4px);
+    }
+
+    .neon-btn:hover {
+      background: #0ff22a20;
+      box-shadow: 0 0 12px #0ff;
+      transform: scale(1.02);
+      border-color: #0ff;
+      color: #bfff;
+    }
+
+    .neon-btn:active {
+      transform: scale(0.98);
+    }
+
+    .neon-btn.purple {
+      border-color: #c084fc;
+      color: #c084fc;
+      box-shadow: 0 0 5px #a855f7;
+    }
+    .neon-btn.purple:hover {
+      background: #a855f720;
+      box-shadow: 0 0 12px #c084fc;
+    }
+    .neon-btn.green {
+      border-color: #2ecc71;
+      color: #2ecc71;
+    }
+
+    /* tabs */
+    .tabs {
+      display: flex;
+      gap: 0.8rem;
+      border-bottom: 1px solid #2d3e5f;
+      padding-bottom: 0.75rem;
+      margin-bottom: 1.8rem;
+      flex-wrap: wrap;
+    }
+    .tab {
+      background: transparent;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: 600;
+      padding: 0.6rem 1.8rem;
+      border-radius: 3rem;
+      cursor: pointer;
+      color: #9bb5d4;
+      transition: 0.2s;
+      font-family: 'Orbitron', monospace;
+    }
+    .tab.active {
+      background: #0ff22a10;
+      color: #0ff;
+      box-shadow: inset 0 0 8px #0ff, 0 0 12px #0ff;
+      border: 1px solid #0ff;
+    }
+    .tab:hover:not(.active) {
+      color: #c0e0ff;
+      text-shadow: 0 0 3px cyan;
+    }
+
+    /* inputs & textarea */
+    textarea, input {
+      background: #05161ecc;
+      border: 1px solid #2c5270;
+      border-radius: 1rem;
+      padding: 0.8rem 1rem;
+      color: #eef5ff;
+      font-size: 0.95rem;
+      resize: vertical;
+      width: 100%;
+      transition: 0.2s;
+    }
+    textarea:focus, input:focus {
+      outline: none;
+      border-color: #0ff;
+      box-shadow: 0 0 10px #0ff88a;
+    }
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .action-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin: 1rem 0;
+      align-items: center;
+    }
+    .history-sidebar {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      border-radius: 1.5rem;
+      padding: 1rem;
+      border-left: 3px solid #0ff;
+      height: fit-content;
+    }
+    .history-list {
+      list-style: none;
+      margin-top: 1rem;
+    }
+    .history-list li {
+      background: #0a1a22;
+      margin: 0.6rem 0;
+      padding: 0.6rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      word-break: break-all;
+      cursor: pointer;
+      border: 1px solid #2e5f6b;
+      transition: 0.1s;
+    }
+    .history-list li:hover {
+      background: #0ff22a10;
+      border-color: #0ff;
+    }
+    .badge {
+      font-size: 0.7rem;
+      background: #0ff33a30;
+      padding: 0.2rem 0.6rem;
+      border-radius: 1rem;
+    }
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0b2b38e6;
+      backdrop-filter: blur(12px);
+      color: #0ff;
+      padding: 0.7rem 1.8rem;
+      border-radius: 3rem;
+      border-left: 4px solid #0ff;
+      z-index: 1000;
+      font-weight: 500;
+      pointer-events: none;
+      transition: 0.3s;
+      opacity: 0;
+    }
+    .toast.show {
+      opacity: 1;
+    }
+    .dropzone {
+      border: 2px dashed #0ff;
+      border-radius: 1.5rem;
+      padding: 1rem;
+      text-align: center;
+      margin-top: 1rem;
+      transition: 0.2s;
+    }
+    .dropzone.drag-over {
+      background: #0ff22a10;
+      border-color: #2ecc71;
+    }
+    .loader {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #0ff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.6s linear infinite;
+      margin-left: 8px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.75rem;
+      opacity: 0.6;
+    }
+    @media (max-width: 768px) {
+      body { padding: 0.8rem; }
+      .grid-2col { grid-template-columns: 1fr; }
+      .tabs { justify-content: center; }
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      filter: grayscale(0.1);
+    }
+    .char-counter {
+      font-size: 0.7rem;
+      text-align: right;
+      margin-top: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+<canvas id="particle-canvas"></canvas>
+<div class="app-container">
+  <header style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
+    <h1>⚡ CYBER SECURITY SUITE <span style="font-size: 0.9rem;">[encrypt | hash | encode]</span></h1>
+    <div style="display: flex; gap: 0.8rem;">
+      <button id="themeToggleBtn" class="neon-btn" style="font-size:0.8rem;">🌓 Light/Dark</button>
+    </div>
+  </header>
+
+  <div class="glass-card" style="padding: 1.5rem;">
+    <div class="tabs">
+      <button class="tab active" data-tool="base64">Base64</button>
+      <button class="tab" data-tool="aes">AES-GCM</button>
+      <button class="tab" data-tool="hash">Hashing</button>
+    </div>
+
+    <!-- DYNAMIC PANELS -->
+    <div id="base64Panel" class="tool-panel">
+      <div class="grid-2col">
+        <div><label>📥 Input Text / Base64</label><textarea id="b64Input" rows="5" placeholder="Text to encode or Base64 to decode..."></textarea><div class="char-counter"><span id="b64CharCount">0</span> chars</div></div>
+        <div><label>📤 Output</label><textarea id="b64Output" rows="5" readonly placeholder="Result will appear here..."></textarea></div>
+      </div>
+      <div class="action-group">
+        <button id="b64EncodeBtn" class="neon-btn">🔒 Encode to Base64</button>
+        <button id="b64DecodeBtn" class="neon-btn purple">🔓 Decode from Base64</button>
+        <button id="b64CopyBtn" class="neon-btn green">📋 Copy Output</button>
+        <button id="b64ClearBtn" class="neon-btn">🗑 Clear</button>
+      </div>
+      <div class="dropzone" id="b64DropZone">📂 Drag & Drop file here or <label style="color:#0ff; cursor:pointer;">📎 browse</label><input type="file" id="b64FileInput" style="display:none;"></div>
+    </div>
+
+    <div id="aesPanel" class="tool-panel" style="display:none;">
+      <div class="grid-2col">
+        <div><label>Plaintext / Ciphertext (base64)</label><textarea id="aesInput" rows="4" placeholder="Enter text to encrypt or ciphertext to decrypt..."></textarea></div>
+        <div><label>🔑 Secret Key (passphrase)</label><input type="password" id="aesKey" placeholder="Strong passphrase"><label style="font-size:0.7rem;">⚠️ Key not stored</label><textarea id="aesOutput" rows="4" readonly placeholder="Encrypted / Decrypted output"></textarea></div>
+      </div>
+      <div class="action-group">
+        <button id="aesEncryptBtn" class="neon-btn">🔐 Encrypt (AES-GCM)</button>
+        <button id="aesDecryptBtn" class="neon-btn purple">🔓 Decrypt</button>
+        <button id="aesCopyBtn" class="neon-btn green">📋 Copy Output</button>
+        <button id="aesClearBtn" class="neon-btn">🗑 Clear</button>
+      </div>
+      <div id="aesIvInfo" style="font-size:0.7rem; margin-top:5px; color:#5bc0be;"></div>
+    </div>
+
+    <div id="hashPanel" class="tool-panel" style="display:none;">
+      <div><label>Text to Hash</label><textarea id="hashInput" rows="4" placeholder="Enter any text..."></textarea><div class="char-counter"><span id="hashCharCount">0</span> chars</div></div>
+      <div style="margin: 1rem 0; display: flex; gap:1rem; flex-wrap:wrap;">
+        <button id="hashSha256Btn" class="neon-btn">SHA-256</button>
+        <button id="hashSha512Btn" class="neon-btn purple">SHA-512</button>
+      </div>
+      <div><label>Hash Result</label><textarea id="hashOutput" rows="3" readonly placeholder="Hexadecimal hash..."></textarea></div>
+      <div class="action-group"><button id="hashCopyBtn" class="neon-btn green">📋 Copy Hash</button><button id="hashClearBtn" class="neon-btn">Clear</button></div>
+    </div>
+  </div>
+
+  <!-- History + additional features -->
+  <div style="display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; margin-top: 1.5rem;">
+    <div class="glass-card" style="padding: 1.2rem;">
+      <div><strong>⚙️ Advanced Actions</strong> <span style="font-size:0.7rem;">(Ctrl+Enter = execute primary action)</span></div>
+      <div class="action-group" style="margin-top: 0.5rem;">
+        <button id="downloadTxtBtn" class="neon-btn">⬇️ Download Output as .txt</button>
+        <button id="clearAllBtn" class="neon-btn purple">Reset All</button>
+      </div>
+      <div id="fileUploadZoneAux" class="dropzone" style="margin-top:0.5rem;">📁 Upload File → Base64 (encrypt/hash support)</div>
+    </div>
+    <div class="history-sidebar">
+      <strong>Recent History (last 5)</strong>
+      <ul id="historyList" class="history-list"><li style="opacity:0.7;">— operations will appear —</li></ul>
+      <button id="clearHistoryBtn" class="neon-btn" style="margin-top:0.8rem; width:100%;">Clear History</button>
+    </div>
+  </div>
+  <footer>🛡️ OWASP-inspired | Web Crypto API | No keys stored | XSS protected</footer>
+</div>
+<div id="toastMsg" class="toast">Copied!</div>
+
+<script>
+  (function(){
+    // ------------------------------
+    // DOM refs
+    // ------------------------------
+    const panels = { base64: document.getElementById('base64Panel'), aes: document.getElementById('aesPanel'), hash: document.getElementById('hashPanel') };
+    const tabs = document.querySelectorAll('.tab');
+    const toastEl = document.getElementById('toastMsg');
+    let activeTool = 'base64';
+
+    // Base64 elements
+    const b64Input = document.getElementById('b64Input');
+    const b64Output = document.getElementById('b64Output');
+    const b64Encode = document.getElementById('b64EncodeBtn');
+    const b64Decode = document.getElementById('b64DecodeBtn');
+    const b64Copy = document.getElementById('b64CopyBtn');
+    const b64Clear = document.getElementById('b64ClearBtn');
+    const b64CharCount = document.getElementById('b64CharCount');
+    const b64DropZone = document.getElementById('b64DropZone');
+    const b64FileInput = document.getElementById('b64FileInput');
+
+    // AES
+    const aesInput = document.getElementById('aesInput');
+    const aesKey = document.getElementById('aesKey');
+    const aesOutput = document.getElementById('aesOutput');
+    const aesEncrypt = document.getElementById('aesEncryptBtn');
+    const aesDecrypt = document.getElementById('aesDecryptBtn');
+    const aesCopy = document.getElementById('aesCopyBtn');
+    const aesClear = document.getElementById('aesClearBtn');
+    const aesIvInfo = document.getElementById('aesIvInfo');
+
+    // Hash
+    const hashInput = document.getElementById('hashInput');
+    const hashOutput = document.getElementById('hashOutput');
+    const hashSha256 = document.getElementById('hashSha256Btn');
+    const hashSha512 = document.getElementById('hashSha512Btn');
+    const hashCopy = document.getElementById('hashCopyBtn');
+    const hashClear = document.getElementById('hashClearBtn');
+    const hashCharCount = document.getElementById('hashCharCount');
+
+    // utilities
+    const downloadBtn = document.getElementById('downloadTxtBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const fileUploadZone = document.getElementById('fileUploadZoneAux');
+    const historyList = document.getElementById('historyList');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const themeToggle = document.getElementById('themeToggleBtn');
+
+    // global history store (last 5)
+    let historyEntries = []; // { type, data, timestamp }
+
+    function showToast(msg, isError=false){
+      toastEl.textContent = msg;
+      toastEl.style.borderLeftColor = isError ? '#ff4d4d' : '#0ff';
+      toastEl.classList.add('show');
+      setTimeout(()=> toastEl.classList.remove('show'), 2200);
+    }
+
+    function sanitizeText(str){ 
+      if(typeof str !== 'string') return '';
+      return str.replace(/[^\x20-\x7E\u00A0-\uFFFF]/g, '?'); // basic sanitization, but avoid dangerous html
+    }
+    function updateCharCounters(){
+      if(activeTool === 'base64') b64CharCount.innerText = b64Input.value.length;
+      if(activeTool === 'hash') hashCharCount.innerText = hashInput.value.length;
+    }
+    function addHistory(type, dataPreview, fullData){
+      historyEntries.unshift({ type, preview: dataPreview.slice(0,80), fullData, timestamp: Date.now() });
+      if(historyEntries.length > 5) historyEntries.pop();
+      saveHistoryToLocal();
+      renderHistory();
+    }
+    function saveHistoryToLocal(){ localStorage.setItem('cyber_history', JSON.stringify(historyEntries)); }
+    function loadHistoryFromLocal(){
+      const stored = localStorage.getItem('cyber_history');
+      if(stored) { try{ historyEntries = JSON.parse(stored); if(!Array.isArray(historyEntries)) historyEntries=[]; }catch(e){} }
+      renderHistory();
+    }
+    function renderHistory(){
+      historyList.innerHTML = '';
+      if(historyEntries.length === 0) { historyList.innerHTML = '<li style="opacity:0.6;">— No recent ops —</li>'; return; }
+      historyEntries.forEach((entry, idx)=>{
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="badge">${entry.type}</span> ${entry.preview.substring(0,45)}...`;
+        li.title = "Click to restore output";
+        li.addEventListener('click', (e)=>{
+          if(activeTool === 'base64') b64Output.value = entry.fullData;
+          else if(activeTool === 'aes') aesOutput.value = entry.fullData;
+          else if(activeTool === 'hash') hashOutput.value = entry.fullData;
+          showToast(`Restored from history: ${entry.type}`);
+        });
+        historyList.appendChild(li);
+      });
+    }
+    function clearHistory(){ historyEntries = []; saveHistoryToLocal(); renderHistory(); showToast("History cleared"); }
+
+    // Base64 logic
+    function encodeBase64(){
+      let raw = b64Input.value;
+      if(!raw) { showToast("No input", true); return; }
+      let encoded = btoa(unescape(encodeURIComponent(raw))); // handles unicode
+      b64Output.value = encoded;
+      addHistory("Base64 Encode", raw.substring(0,40), encoded);
+      showToast("Encoded to Base64");
+    }
+    function decodeBase64(){
+      let data = b64Input.value.trim();
+      if(!data){ showToast("Empty input", true); return; }
+      try{
+        let decoded = decodeURIComponent(escape(atob(data)));
+        b64Output.value = decoded;
+        addHistory("Base64 Decode", data.substring(0,40), decoded);
+        showToast("Decoded successfully");
+      }catch(e){ showToast("Invalid Base64", true); }
+    }
+    function copyOutput(outputField){ 
+      let val = outputField.value;
+      if(!val) { showToast("Nothing to copy", true); return; }
+      navigator.clipboard.writeText(val).then(()=>showToast("Copied!")).catch(()=>showToast("Clipboard error",true));
+    }
+    function clearFields(panel){
+      if(panel === 'base64'){ b64Input.value=''; b64Output.value=''; updateCharCounters(); showToast("Cleared");}
+      else if(panel === 'aes'){ aesInput.value=''; aesKey.value=''; aesOutput.value=''; aesIvInfo.innerText='';}
+      else if(panel === 'hash'){ hashInput.value=''; hashOutput.value=''; updateCharCounters();}
+    }
+
+    // AES-GCM using Web Crypto
+    async function getKeyFromPassword(password, salt){
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
+      return crypto.subtle.deriveKey({
+        name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256"
+      }, keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt","decrypt"]);
+    }
+    async function encryptAES(){
+      const plain = aesInput.value;
+      const pass = aesKey.value;
+      if(!plain || !pass){ showToast("Enter text & secret key", true); return; }
+      const enc = new TextEncoder();
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const key = await getKeyFromPassword(pass, salt);
+      const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, enc.encode(plain));
+      const combined = {
+        iv: Array.from(iv), salt: Array.from(salt), ciphertext: Array.from(new Uint8Array(encrypted))
+      };
+      const resultB64 = btoa(JSON.stringify(combined));
+      aesOutput.value = resultB64;
+      aesIvInfo.innerText = `🔑 IV+Salt embedded | length: ${resultB64.length} chars`;
+      addHistory("AES Encrypt", plain.substring(0,40), resultB64);
+      showToast("Encrypted (AES-GCM)");
+    }
+    async function decryptAES(){
+      const cipherB64 = aesInput.value;
+      const pass = aesKey.value;
+      if(!cipherB64 || !pass){ showToast("Provide ciphertext & key", true); return; }
+      try{
+        const combined = JSON.parse(atob(cipherB64));
+        const iv = new Uint8Array(combined.iv);
+        const salt = new Uint8Array(combined.salt);
+        const ciphertext = new Uint8Array(combined.ciphertext);
+        const key = await getKeyFromPassword(pass, salt);
+        const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, ciphertext);
+        const decText = new TextDecoder().decode(decrypted);
+        aesOutput.value = decText;
+        addHistory("AES Decrypt", cipherB64.substring(0,40), decText);
+        showToast("Decrypted");
+      }catch(e){ showToast("Decrypt failed: wrong key or corrupted", true); }
+    }
+
+    // Hashing
+    async function hashText(algorithm){
+      let text = hashInput.value;
+      if(!text){ showToast("Enter text to hash", true); return; }
+      const enc = new TextEncoder();
+      const data = enc.encode(text);
+      const hashBuffer = await crypto.subtle.digest(algorithm, data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hex = hashArray.map(b=>b.toString(16).padStart(2,'0')).join('');
+      hashOutput.value = hex;
+      addHistory(`Hash ${algorithm==='SHA-256'?'SHA256':'SHA512'}`, text.substring(0,40), hex);
+      showToast(`${algorithm} hash computed`);
+    }
+
+    // File & drag-drop handler (Base64 conversion)
+    function handleFile(file, callback){
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const result = e.target.result;
+        if(result.startsWith('data:')){
+          const base64Data = result.split(',')[1] || result;
+          b64Input.value = base64Data;
+          showToast(`File "${file.name}" loaded as Base64`);
+          updateCharCounters();
+        }else{
+          b64Input.value = result;
+        }
+        if(callback) callback();
+      };
+      reader.readAsDataURL(file);
+    }
+    function setupDropZone(zone, fileInputElem, targetInput){
+      zone.addEventListener('dragover', (e)=>{ e.preventDefault(); zone.classList.add('drag-over');});
+      zone.addEventListener('dragleave', ()=> zone.classList.remove('drag-over'));
+      zone.addEventListener('drop', (e)=>{ e.preventDefault(); zone.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0]; if(file) handleFile(file, ()=>updateCharCounters());});
+      zone.querySelector('label')?.addEventListener('click', ()=> fileInputElem.click());
+      fileInputElem.addEventListener('change', (e)=> { if(e.target.files[0]) handleFile(e.target.files[0], ()=>updateCharCounters());});
+    }
+    setupDropZone(b64DropZone, b64FileInput, b64Input);
+    // second file upload zone (for general usage)
+    const fileInputAux = document.createElement('input'); fileInputAux.type='file'; fileInputAux.style.display='none';
+    fileUploadZone.appendChild(fileInputAux);
+    fileUploadZone.addEventListener('click', ()=> fileInputAux.click());
+    fileInputAux.addEventListener('change', (e)=>{
+      if(e.target.files[0]) handleFile(e.target.files[0], ()=>updateCharCounters());
+    });
+    fileUploadZone.addEventListener('dragover', (e)=>e.preventDefault());
+    fileUploadZone.addEventListener('drop', (e)=>{ e.preventDefault(); const f=e.dataTransfer.files[0]; if(f) handleFile(f, ()=>updateCharCounters());});
+
+    // Download output .txt
+    function downloadCurrentOutput(){
+      let content = '';
+      if(activeTool === 'base64') content = b64Output.value;
+      else if(activeTool === 'aes') content = aesOutput.value;
+      else if(activeTool === 'hash') content = hashOutput.value;
+      if(!content) { showToast("No output to download", true); return; }
+      const blob = new Blob([content], {type:'text/plain'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `cyber_output_${activeTool}.txt`; a.click(); URL.revokeObjectURL(a.href);
+      showToast("Downloaded");
+    }
+
+    // Global keyboard shortcut: Ctrl+Enter
+    document.addEventListener('keydown', (e)=>{
+      if(e.ctrlKey && e.key === 'Enter'){
+        e.preventDefault();
+        if(activeTool === 'base64') encodeBase64();
+        else if(activeTool === 'aes') encryptAES();
+        else if(activeTool === 'hash') hashSha256.click();
+      }
+    });
+
+    // Theme Toggle (Light/Dark with local override)
+    let darkMode = true;
+    themeToggle.addEventListener('click', ()=>{
+      darkMode = !darkMode;
+      document.body.style.background = darkMode ? "radial-gradient(circle at 20% 30%, #0a0f1a, #03060c)" : "#eef4ff";
+      document.body.style.color = darkMode ? "#e0f2fe" : "#111";
+      const cards = document.querySelectorAll('.glass-card, .history-sidebar');
+      cards.forEach(c=> c.style.background = darkMode ? "rgba(12,20,30,0.65)" : "rgba(240,248,255,0.8)");
+      showToast(darkMode ? "Dark theme" : "Light theme");
+    });
+
+    // Event listeners binding
+    b64Encode.onclick = encodeBase64; b64Decode.onclick = decodeBase64; b64Copy.onclick = ()=> copyOutput(b64Output); b64Clear.onclick = ()=> clearFields('base64');
+    aesEncrypt.onclick = encryptAES; aesDecrypt.onclick = decryptAES; aesCopy.onclick = ()=> copyOutput(aesOutput); aesClear.onclick = ()=> clearFields('aes');
+    hashSha256.onclick = ()=> hashText('SHA-256'); hashSha512.onclick = ()=> hashText('SHA-512'); hashCopy.onclick = ()=> copyOutput(hashOutput); hashClear.onclick = ()=> clearFields('hash');
+    downloadBtn.onclick = downloadCurrentOutput; clearAllBtn.onclick = ()=>{ clearFields(activeTool); showToast("Reset current panel"); };
+    clearHistoryBtn.onclick = clearHistory;
+    // tab switching
+    tabs.forEach(tab=>{
+      tab.addEventListener('click',()=>{
+        const tool = tab.dataset.tool;
+        activeTool = tool;
+        Object.keys(panels).forEach(p=> panels[p].style.display = p===tool ? 'block' : 'none');
+        tabs.forEach(t=> t.classList.remove('active'));
+        tab.classList.add('active');
+        updateCharCounters();
+      });
+    });
+    // initial char counter updates
+    b64Input.addEventListener('input', updateCharCounters);
+    hashInput.addEventListener('input', updateCharCounters);
+    loadHistoryFromLocal();
+    updateCharCounters();
+
+    // particle animation (simple)
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    function resizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas); resizeCanvas();
+    let particles = [];
+    for(let i=0;i<60;i++) particles.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, radius:Math.random()*2+1, alpha:Math.random()*0.5, dx:(Math.random()-0.5)*0.3, dy:(Math.random()-0.5)*0.3});
+    function animateParticles(){
+      if(!ctx) return;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      particles.forEach(p=>{
+        p.x+=p.dx; p.y+=p.dy;
+        if(p.x<0) p.x=canvas.width; if(p.x>canvas.width) p.x=0;
+        if(p.y<0) p.y=canvas.height; if(p.y>canvas.height) p.y=0;
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.radius,0,Math.PI*2);
+        ctx.fillStyle = `rgba(0, 255, 200, ${p.alpha*0.3})`;
+        ctx.fill();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+  })();
+</script>
+</body>
+</html>
