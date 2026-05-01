@@ -400,7 +400,7 @@ connect-src 'none'
 
 ### Screenshot 1: Main Interface
 
-[Screenshot](main.jpg)
+![Screenshot](main.jpg)
 
 *Description: The CYBER SUITE main interface showing the glassmorphism card design with three module tabs (Base64, AES-GCM, Hashing). The Base64 module is active, displaying input and output textareas with the character counter. The operation history sidebar is visible on the right with recent operations. The dark theme is active with cyan accent colors and animated particle background.*
 
